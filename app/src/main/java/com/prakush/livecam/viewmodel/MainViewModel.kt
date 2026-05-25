@@ -12,8 +12,4 @@ class MainViewModel : ViewModel() {
         value = repository.getData()
     }
     val text: LiveData<String> = _text
-
-    fun onFabClicked() {
-        _text.value = "FAB clicked! Update from ViewModel"
-    }
 }
