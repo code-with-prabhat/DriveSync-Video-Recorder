@@ -250,6 +250,10 @@ class FirstFragment : Fragment() {
 
         requestSignIn()
 
+        binding.imageView.setOnClickListener {
+            findNavController().navigate(R.id.action_FirstFragment_to_videoListFragment)
+        }
+
         binding.buttonFirst.setOnClickListener {
             if (!isAutoRecording) {
                 binding.buttonFirst.isEnabled = false
@@ -264,23 +268,23 @@ class FirstFragment : Fragment() {
                             segmentCounter = 1
                             
                             isAutoRecording = true
-                            binding.buttonFirst.text = "Stop Auto Recording"
+                            binding.buttonFirst.text = "Stop"
                             captureVideo()
                         } else {
                             Toast.makeText(requireContext(), "Drive service not initialized", Toast.LENGTH_SHORT).show()
-                            binding.buttonFirst.text = "Start Auto Recording"
+                            binding.buttonFirst.text = "Start"
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Initialization failed", e)
                         Toast.makeText(requireContext(), "Failed to initialize folders", Toast.LENGTH_SHORT).show()
-                        binding.buttonFirst.text = "Start Auto Recording"
+                        binding.buttonFirst.text = "Start"
                     } finally {
                         binding.buttonFirst.isEnabled = true
                     }
                 }
             } else {
                 isAutoRecording = false
-                binding.buttonFirst.text = "Start Auto Recording"
+                binding.buttonFirst.text = "Start"
                 recording?.stop()
             }
         }

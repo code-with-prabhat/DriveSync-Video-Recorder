@@ -38,6 +38,7 @@
             android:id="@+id/action_SignUp_to_Login"
             app:destination="@id/AuthenticationFragmentLogin" />
     </fragment>
+
     <fragment
         android:id="@+id/videoListFragment"
         android:name="com.prakush.livecam.ui.VideoListFragment"
