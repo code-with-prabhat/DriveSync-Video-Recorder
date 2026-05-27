@@ -8,7 +8,6 @@
     <fragment
         android:id="@+id/FirstFragment"
         android:name="com.prakush.livecam.ui.FirstFragment"
-        android:label="@string/first_fragment_label"
         tools:layout="@layout/fragment_first">
         <action
             android:id="@+id/action_First_to_Login"
@@ -22,7 +21,6 @@
     <fragment
         android:id="@+id/AuthenticationFragmentLogin"
         android:name="com.prakush.livecam.ui.AuthenticationFragmentLogin"
-        android:label="Login"
         tools:layout="@layout/fragment_authentication_login">
         <action
             android:id="@+id/action_Login_to_SignUp"
@@ -35,7 +33,6 @@
     <fragment
         android:id="@+id/AuthenticationFragmentSignUp"
         android:name="com.prakush.livecam.ui.AuthenticationFragmentSignUp"
-        android:label="Sign Up"
         tools:layout="@layout/fragment_authentication_sign_up">
         <action
             android:id="@+id/action_SignUp_to_Login"
@@ -43,8 +40,7 @@
     </fragment>
     <fragment
         android:id="@+id/videoListFragment"
-        android:name="com.prakush.livecam.VideoListFragment"
-        android:label="fragment_video_list"
+        android:name="com.prakush.livecam.ui.VideoListFragment"
         tools:layout="@layout/fragment_video_list" />
 
 </navigation>
