@@ -5,5 +5,6 @@ data class Video(
     val name: String,
     val mimeType: String,
     val thumbnailUri: String? = null,
-    val createdTime: String? = null
+    val createdTime: String? = null,
+    val isFolder: Boolean = false
 )

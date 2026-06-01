@@ -26,11 +26,17 @@ class VideoAdapter(private val onVideoClick: (Video) -> Unit) :
 
         fun bind(video: Video) {
             binding.textViewVideoName.text = video.name
-            binding.textViewUploadDate.text = video.createdTime ?: "Unknown date"
-            
-            // For now, we don't have actual thumbnails from Drive without extra API calls,
-            // so we'll leave it as default or use a placeholder if we had one.
-            
+            binding.textViewUploadDate.text = video.createdTime ?: ""
+
+            if (video.isFolder) {
+                binding.imageViewThumbnail.setImageResource(android.R.drawable.ic_menu_more)
+                binding.textViewUploadDate.visibility = android.view.View.GONE
+            } else {
+                binding.imageViewThumbnail.setImageResource(android.R.drawable.presence_video_online)
+                binding.textViewUploadDate.visibility = android.view.View.VISIBLE
+                binding.textViewUploadDate.text = "Uploaded: ${video.createdTime ?: "Unknown"}"
+            }
+
             binding.root.setOnClickListener {
                 onVideoClick(video)
             }

@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "LiveCam"
+rootProject.name = "DriveSync Video Recorder"
 include(":app")

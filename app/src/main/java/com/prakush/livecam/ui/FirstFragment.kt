@@ -136,7 +136,13 @@ class FirstFragment : Fragment() {
                 is VideoRecordEvent.Finalize -> {
                     if (!recordEvent.hasError()) {
                         val uri = recordEvent.outputResults.outputUri
-                        uploadToDrive(uri, segmentCounter)
+                        val durationNanos = recordEvent.recordingStats.recordedDurationNanos
+                        val durationSeconds = durationNanos / 1_000_000_000
+                        val minutes = durationSeconds / 60
+                        val seconds = durationSeconds % 60
+                        val durationText = String.format("%02d:%02d", minutes, seconds)
+
+                        uploadToDrive(uri, segmentCounter, durationText)
                         segmentCounter++
                         if (isAutoRecording) {
                             captureVideo() // Start next segment
@@ -177,21 +183,21 @@ class FirstFragment : Fragment() {
             AndroidHttp.newCompatibleTransport(),
             GsonFactory.getDefaultInstance(),
             credential
-        ).setApplicationName("LiveCam").build()
+        ).setApplicationName("DriveSync Video Recorder").build()
     }
 
-    private fun uploadToDrive(uri: Uri, segmentNumber: Int) {
+    private fun uploadToDrive(uri: Uri, segmentNumber: Int, duration: String) {
         val service = driveService ?: return
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val timestamp = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.getDefault()).format(Date())
                 val fileMetadata = com.google.api.services.drive.model.File().apply {
-                    name = "${segmentNumber}_$timestamp.mp4"
+                    name = "${segmentNumber}_${duration}_$timestamp.mp4"
                     currentSessionFolderId?.let {
                         parents = listOf(it)
                     }
                 }
-                
+
                 // Convert Uri to File (This is a simplified version, ideally use contentResolver.openInputStream)
                 val inputStream = requireContext().contentResolver.openInputStream(uri)
                 val mediaContent = com.google.api.client.http.InputStreamContent("video/mp4", inputStream)
@@ -199,7 +205,7 @@ class FirstFragment : Fragment() {
                 val file = service.files().create(fileMetadata, mediaContent)
                     .setFields("id")
                     .execute()
-                
+
                 withContext(Dispatchers.Main) {
                     Log.d(TAG, "Uploaded Segment $segmentNumber, ID: ${file.id}")
                 }
@@ -213,7 +219,7 @@ class FirstFragment : Fragment() {
         return withContext(Dispatchers.IO) {
             val query = "name = '$folderName' and mimeType = 'application/vnd.google-apps.folder' and trashed = false" +
                     if (parentId != null) " and '$parentId' in parents" else ""
-            
+
             val result = service.files().list()
                 .setQ(query)
                 .setSpaces("drive")
@@ -266,7 +272,7 @@ class FirstFragment : Fragment() {
                             val sessionName = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.getDefault()).format(Date())
                             currentSessionFolderId = getOrCreateFolder(service, sessionName, specialFolderId)
                             segmentCounter = 1
-                            
+
                             isAutoRecording = true
                             binding.buttonFirst.text = "Stop"
                             captureVideo()
