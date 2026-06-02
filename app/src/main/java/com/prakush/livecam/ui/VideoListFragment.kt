@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.prakush.livecam.R
 import com.prakush.livecam.databinding.FragmentVideoListBinding
 import com.prakush.livecam.viewmodel.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -85,7 +86,15 @@ class VideoListFragment : Fragment() {
             if (item.isFolder) {
                 fetchVideosInFolder(item.id)
             } else {
-                Toast.makeText(requireContext(), "Opening video: ${item.name}", Toast.LENGTH_SHORT).show()
+                val videos = viewModel.videos.value?.toTypedArray() ?: emptyArray()
+                val position = videos.indexOfFirst { it.id == item.id }
+                if (position != -1) {
+                    val bundle = Bundle().apply {
+                        putParcelableArray("videos", videos)
+                        putInt("startPosition", position)
+                    }
+                    findNavController().navigate(R.id.action_videoListFragment_to_videoPlayerFragment, bundle)
+                }
             }
         }
         binding.recyclerViewVideos.adapter = videoAdapter

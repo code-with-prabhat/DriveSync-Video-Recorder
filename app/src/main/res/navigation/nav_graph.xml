@@ -50,6 +50,22 @@
     <fragment
         android:id="@+id/videoListFragment"
         android:name="com.prakush.livecam.ui.VideoListFragment"
-        tools:layout="@layout/fragment_video_list" />
+        tools:layout="@layout/fragment_video_list">
+        <action
+            android:id="@+id/action_videoListFragment_to_videoPlayerFragment"
+            app:destination="@id/videoPlayerFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/videoPlayerFragment"
+        android:name="com.prakush.livecam.ui.VideoPlayerFragment"
+        tools:layout="@layout/fragment_video_player">
+        <argument
+            android:name="videos"
+            app:argType="com.prakush.livecam.data.Video[]" />
+        <argument
+            android:name="startPosition"
+            app:argType="integer" />
+    </fragment>
 
 </navigation>
