@@ -55,6 +55,7 @@ class FirstFragment : Fragment() {
     private var segmentCounter = 1
 
     private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        @Suppress("DEPRECATION")
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
         if (task.isSuccessful) {
             viewModel.initializeDriveService(requireContext())
@@ -151,6 +152,7 @@ class FirstFragment : Fragment() {
     }
 
     private fun requestSignIn() {
+        @Suppress("DEPRECATION")
         val account = GoogleSignIn.getLastSignedInAccount(requireContext())
         if (account != null && account.grantedScopes.contains(Scope(DriveScopes.DRIVE_FILE))) {
             viewModel.initializeDriveService(requireContext())
@@ -159,6 +161,7 @@ class FirstFragment : Fragment() {
                 .requestEmail()
                 .requestScopes(Scope(DriveScopes.DRIVE_FILE))
                 .build()
+            @Suppress("DEPRECATION")
             val client = GoogleSignIn.getClient(requireActivity(), gso)
             signInLauncher.launch(client.signInIntent)
         }

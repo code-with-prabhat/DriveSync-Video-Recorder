@@ -21,6 +21,7 @@ class SettingsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        @Suppress("DEPRECATION")
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
         if (task.isSuccessful) {
             updateDriveStatus(task.result)
@@ -58,6 +59,7 @@ class SettingsFragment : Fragment() {
     }
 
     private fun checkCurrentDriveStatus() {
+        @Suppress("DEPRECATION")
         val account = GoogleSignIn.getLastSignedInAccount(requireContext())
         updateDriveStatus(account)
     }
@@ -77,6 +79,7 @@ class SettingsFragment : Fragment() {
             .requestEmail()
             .requestScopes(Scope(DriveScopes.DRIVE_FILE))
             .build()
+        @Suppress("DEPRECATION")
         val client = GoogleSignIn.getClient(requireActivity(), gso)
         signInLauncher.launch(client.signInIntent)
     }
