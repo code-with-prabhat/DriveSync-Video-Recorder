@@ -2,14 +2,15 @@ package com.prakush.livecam.ui
 
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
@@ -48,23 +49,46 @@ class VideoListFragment : Fragment() {
 
         setupRecyclerView()
         initializeDriveService()
-        fetchSessions()
 
         viewModel.videos.observe(viewLifecycleOwner) { videos ->
             videoAdapter.submitList(videos)
-            binding.progressBar.visibility = View.GONE
         }
+
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        }
+
+        fetchSessions()
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (!isViewingSessions) {
                     fetchSessions()
                 } else {
-                    isEnabled = false
-                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                    findNavController().popBackStack()
                 }
             }
         })
+
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {}
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    android.R.id.home -> {
+                        if (!isViewingSessions) {
+                            fetchSessions()
+                            true
+                        } else {
+                            findNavController().popBackStack()
+                            true
+                        }
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner)
     }
 
     private fun setupRecyclerView() {
@@ -98,7 +122,7 @@ class VideoListFragment : Fragment() {
 
     private fun fetchSessions() {
         val service = driveService ?: return
-        binding.progressBar.visibility = View.VISIBLE
+        viewModel.setLoading(true)
         isViewingSessions = true
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -116,7 +140,7 @@ class VideoListFragment : Fragment() {
                 val currentRootId = rootFolderId
                 if (currentRootId == null) {
                     withContext(Dispatchers.Main) {
-                        binding.progressBar.visibility = View.GONE
+                        viewModel.setLoading(false)
                         Toast.makeText(requireContext(), "No recordings found", Toast.LENGTH_SHORT).show()
                     }
                     return@launch
@@ -145,7 +169,7 @@ class VideoListFragment : Fragment() {
             } catch (e: Exception) {
                 Log.e("VideoListFragment", "Error fetching sessions", e)
                 withContext(Dispatchers.Main) {
-                    binding.progressBar.visibility = View.GONE
+                    viewModel.setLoading(false)
                     Toast.makeText(requireContext(), "Failed to fetch sessions", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -154,7 +178,7 @@ class VideoListFragment : Fragment() {
 
     private fun fetchVideosInFolder(folderId: String) {
         val service = driveService ?: return
-        binding.progressBar.visibility = View.VISIBLE
+        viewModel.setLoading(true)
         isViewingSessions = false
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -182,7 +206,7 @@ class VideoListFragment : Fragment() {
             } catch (e: Exception) {
                 Log.e("VideoListFragment", "Error fetching videos", e)
                 withContext(Dispatchers.Main) {
-                    binding.progressBar.visibility = View.GONE
+                    viewModel.setLoading(false)
                     Toast.makeText(requireContext(), "Failed to fetch videos", Toast.LENGTH_SHORT).show()
                 }
             }

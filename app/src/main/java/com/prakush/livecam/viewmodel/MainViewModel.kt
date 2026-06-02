@@ -12,8 +12,16 @@ class MainViewModel : ViewModel() {
     private val _videos = MutableLiveData<List<Video>>()
     val videos: LiveData<List<Video>> = _videos
 
+    private val _isLoading = MutableLiveData<Boolean>(false)
+    val isLoading: LiveData<Boolean> = _isLoading
+
     fun setVideos(videoList: List<Video>) {
         _videos.value = videoList
+        _isLoading.value = false
+    }
+
+    fun setLoading(loading: Boolean) {
+        _isLoading.value = loading
     }
 
     private val _text = MutableLiveData<String>().apply {

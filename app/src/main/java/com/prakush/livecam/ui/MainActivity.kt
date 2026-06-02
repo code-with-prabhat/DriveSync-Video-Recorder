@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
-      //  splashScreen.setKeepOnScreenCondition { viewModel.isLoading.value }
+      //  splashScreen.setKeepOnScreenCondition { viewModel.isLoading.value ?: false }
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
