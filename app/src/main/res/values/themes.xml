@@ -3,15 +3,16 @@
     <style name="Base.Theme.LiveCam" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">#317AFF</item>
     </style>
+
     <style name="Theme.LiveCam" parent="Base.Theme.LiveCam" />
 
     <!-- Splash Screen Theme -->
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
-    <!-- Background color of the splash -->
-    <item name="windowSplashScreenBackground">#FFFFFF</item>
-    <!-- The icon in the center -->
-    <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
-    <!-- The theme to switch to after the splash is gone -->
-    <item name="postSplashScreenTheme">@style/Theme.LiveCam</item>
-</style>
+        <!-- Background color of the splash -->
+        <item name="windowSplashScreenBackground">#FFFFFF</item>
+        <!-- The icon in the center -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <!-- The theme to switch to after the splash is gone -->
+        <item name="postSplashScreenTheme">@style/Theme.LiveCam</item>
+    </style>
 </resources>
