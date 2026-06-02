@@ -11,12 +11,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.api.client.extensions.android.http.AndroidHttp
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
-import com.google.api.client.json.gson.GsonFactory
-import com.google.api.services.drive.Drive
-import com.google.api.services.drive.DriveScopes
 import com.prakush.livecam.data.Video
 import com.prakush.livecam.databinding.FragmentVideoListBinding
 import com.prakush.livecam.viewmodel.MainViewModel
@@ -31,9 +25,6 @@ class VideoListFragment : Fragment() {
 
     private val viewModel: MainViewModel by activityViewModels()
     private lateinit var videoAdapter: VideoAdapter
-    private var driveService: Drive? = null
-
-    private var rootFolderId: String? = null
     private var isViewingSessions = true
 
     override fun onCreateView(
@@ -48,7 +39,7 @@ class VideoListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
-        initializeDriveService()
+        ensureDriveServiceInitialized()
 
         viewModel.videos.observe(viewLifecycleOwner) { videos ->
             videoAdapter.submitList(videos)
@@ -62,11 +53,7 @@ class VideoListFragment : Fragment() {
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (!isViewingSessions) {
-                    fetchSessions()
-                } else {
-                    findNavController().popBackStack()
-                }
+                handleBackAction()
             }
         })
 
@@ -77,18 +64,21 @@ class VideoListFragment : Fragment() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     android.R.id.home -> {
-                        if (!isViewingSessions) {
-                            fetchSessions()
-                            true
-                        } else {
-                            findNavController().popBackStack()
-                            true
-                        }
+                        handleBackAction()
+                        true
                     }
                     else -> false
                 }
             }
         }, viewLifecycleOwner)
+    }
+
+    private fun handleBackAction() {
+        if (!isViewingSessions) {
+            fetchSessions()
+        } else {
+            findNavController().popBackStack()
+        }
     }
 
     private fun setupRecyclerView() {
@@ -97,119 +87,88 @@ class VideoListFragment : Fragment() {
                 fetchVideosInFolder(item.id)
             } else {
                 Toast.makeText(requireContext(), "Opening video: ${item.name}", Toast.LENGTH_SHORT).show()
-                // Handle video playback if needed
             }
         }
         binding.recyclerViewVideos.adapter = videoAdapter
     }
 
-    private fun initializeDriveService() {
-        val account = GoogleSignIn.getLastSignedInAccount(requireContext())
-        if (account != null) {
-            val credential = GoogleAccountCredential.usingOAuth2(
-                requireContext(), listOf(DriveScopes.DRIVE_FILE)
-            ).apply {
-                selectedAccount = account.account
-            }
-
-            driveService = Drive.Builder(
-                AndroidHttp.newCompatibleTransport(),
-                GsonFactory.getDefaultInstance(),
-                credential
-            ).setApplicationName("DriveSync Video Recorder").build()
-        }
+    private fun ensureDriveServiceInitialized() {
+        viewModel.initializeDriveService(requireContext())
     }
 
     private fun fetchSessions() {
-        val service = driveService ?: return
+        val service = viewModel.driveService ?: return
         viewModel.setLoading(true)
         isViewingSessions = true
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                if (rootFolderId == null) {
+                if (viewModel.rootFolderId == null) {
                     val folderQuery = "name = 'LiveCam_Recordings' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
                     val folderResult = service.files().list()
                         .setQ(folderQuery)
                         .setSpaces("drive")
                         .setFields("files(id)")
                         .execute()
-                    rootFolderId = folderResult.files?.firstOrNull()?.id
+                    viewModel.rootFolderId = folderResult.files?.firstOrNull()?.id
                 }
 
-                val currentRootId = rootFolderId
+                val currentRootId = viewModel.rootFolderId
                 if (currentRootId == null) {
-                    withContext(Dispatchers.Main) {
-                        viewModel.setLoading(false)
-                        Toast.makeText(requireContext(), "No recordings found", Toast.LENGTH_SHORT).show()
-                    }
+                    showError("No recordings found")
                     return@launch
                 }
 
                 val sessionQuery = "'$currentRootId' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
-                val sessionResult = service.files().list()
-                    .setQ(sessionQuery)
-                    .setSpaces("drive")
-                    .setFields("files(id, name, createdTime)")
-                    .execute()
-
-                val sessions = sessionResult.files?.map { file ->
-                    Video(
-                        id = file.id,
-                        name = file.name,
-                        mimeType = "application/vnd.google-apps.folder",
-                        createdTime = file.createdTime?.toString(),
-                        isFolder = true
-                    )
-                } ?: emptyList()
-
-                withContext(Dispatchers.Main) {
-                    viewModel.setVideos(sessions.sortedBy { it.createdTime })
-                }
+                fetchAndDisplayFiles(sessionQuery, "application/vnd.google-apps.folder", true, "Error fetching sessions")
             } catch (e: Exception) {
-                Log.e("VideoListFragment", "Error fetching sessions", e)
-                withContext(Dispatchers.Main) {
-                    viewModel.setLoading(false)
-                    Toast.makeText(requireContext(), "Failed to fetch sessions", Toast.LENGTH_SHORT).show()
-                }
+                showError("Error fetching sessions", e)
             }
         }
     }
 
     private fun fetchVideosInFolder(folderId: String) {
-        val service = driveService ?: return
         viewModel.setLoading(true)
         isViewingSessions = false
 
         lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val fileQuery = "'$folderId' in parents and mimeType = 'video/mp4' and trashed = false"
-                val fileResult = service.files().list()
-                    .setQ(fileQuery)
-                    .setSpaces("drive")
-                    .setFields("files(id, name, mimeType, createdTime)")
-                    .execute()
+            val fileQuery = "'$folderId' in parents and mimeType = 'video/mp4' and trashed = false"
+            fetchAndDisplayFiles(fileQuery, "video/mp4", false, "Error fetching videos")
+        }
+    }
 
-                val videos = fileResult.files?.map { file ->
-                    Video(
-                        id = file.id,
-                        name = file.name,
-                        mimeType = file.mimeType,
-                        createdTime = file.createdTime?.toString(),
-                        isFolder = false
-                    )
-                } ?: emptyList()
+    private suspend fun fetchAndDisplayFiles(query: String, defaultMimeType: String, isFolder: Boolean, errorMsg: String) {
+        val service = viewModel.driveService ?: return
+        try {
+            val result = service.files().list()
+                .setQ(query)
+                .setSpaces("drive")
+                .setFields("files(id, name, mimeType, createdTime)")
+                .execute()
 
-                withContext(Dispatchers.Main) {
-                    viewModel.setVideos(videos.sortedBy { it.createdTime })
-                }
-            } catch (e: Exception) {
-                Log.e("VideoListFragment", "Error fetching videos", e)
-                withContext(Dispatchers.Main) {
-                    viewModel.setLoading(false)
-                    Toast.makeText(requireContext(), "Failed to fetch videos", Toast.LENGTH_SHORT).show()
-                }
+            val videos = result.files?.map { file ->
+                Video(
+                    id = file.id,
+                    name = file.name,
+                    mimeType = file.mimeType ?: defaultMimeType,
+                    createdTime = file.createdTime?.toString(),
+                    isFolder = isFolder
+                )
+            } ?: emptyList()
+
+            withContext(Dispatchers.Main) {
+                viewModel.setVideos(videos.sortedBy { it.createdTime })
             }
+        } catch (e: Exception) {
+            showError(errorMsg, e)
+        }
+    }
+
+    private suspend fun showError(message: String, e: Exception? = null) {
+        if (e != null) Log.e("VideoListFragment", message, e)
+        withContext(Dispatchers.Main) {
+            viewModel.setLoading(false)
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -15,8 +15,16 @@
         <action
             android:id="@+id/action_FirstFragment_to_videoListFragment"
             app:destination="@id/videoListFragment" />
+        <action
+            android:id="@+id/action_FirstFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
 
     </fragment>
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.prakush.livecam.ui.SettingsFragment"
+        tools:layout="@layout/fragment_settings" />
 
     <fragment
         android:id="@+id/AuthenticationFragmentLogin"

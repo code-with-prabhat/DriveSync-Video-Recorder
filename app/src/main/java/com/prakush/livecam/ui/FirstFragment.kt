@@ -25,10 +25,6 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Scope
-import com.google.api.client.extensions.android.http.AndroidHttp
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
-import com.google.api.client.http.FileContent
-import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.prakush.livecam.R
@@ -38,7 +34,6 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -56,7 +51,6 @@ class FirstFragment : Fragment() {
     private lateinit var cameraExecutor: ExecutorService
 
     private var isAutoRecording = false
-    private var driveService: Drive? = null
     private var specialFolderId: String? = null
     private var currentSessionFolderId: String? = null
     private var segmentCounter = 1
@@ -64,7 +58,7 @@ class FirstFragment : Fragment() {
     private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
         if (task.isSuccessful) {
-            initializeDriveService()
+            viewModel.initializeDriveService(requireContext())
         } else {
             Toast.makeText(requireContext(), "Google Sign-in failed", Toast.LENGTH_SHORT).show()
         }
@@ -125,7 +119,7 @@ class FirstFragment : Fragment() {
         recording = pendingRecording.start(ContextCompat.getMainExecutor(requireContext())) { recordEvent ->
             when(recordEvent) {
                 is VideoRecordEvent.Start -> {
-                    Toast.makeText(requireContext(), "Recording Started", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.recording_started, Toast.LENGTH_SHORT).show()
                     // Schedule stop after 5 seconds if auto-recording
                     if (isAutoRecording) {
                         binding.root.postDelayed({
@@ -140,7 +134,7 @@ class FirstFragment : Fragment() {
                         val durationSeconds = durationNanos / 1_000_000_000
                         val minutes = durationSeconds / 60
                         val seconds = durationSeconds % 60
-                        val durationText = String.format("%02d:%02d", minutes, seconds)
+                        val durationText = String.format(Locale.US, "%02d:%02d", minutes, seconds)
 
                         uploadToDrive(uri, segmentCounter, durationText)
                         segmentCounter++
@@ -160,7 +154,7 @@ class FirstFragment : Fragment() {
     private fun requestSignIn() {
         val account = GoogleSignIn.getLastSignedInAccount(requireContext())
         if (account != null && account.grantedScopes.contains(Scope(DriveScopes.DRIVE_FILE))) {
-            initializeDriveService()
+            viewModel.initializeDriveService(requireContext())
         } else {
             val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -171,23 +165,8 @@ class FirstFragment : Fragment() {
         }
     }
 
-    private fun initializeDriveService() {
-        val account = GoogleSignIn.getLastSignedInAccount(requireContext()) ?: return
-        val credential = GoogleAccountCredential.usingOAuth2(
-            requireContext(), listOf(DriveScopes.DRIVE_FILE)
-        ).apply {
-            selectedAccount = account.account
-        }
-
-        driveService = Drive.Builder(
-            AndroidHttp.newCompatibleTransport(),
-            GsonFactory.getDefaultInstance(),
-            credential
-        ).setApplicationName("DriveSync Video Recorder").build()
-    }
-
     private fun uploadToDrive(uri: Uri, segmentNumber: Int, duration: String) {
-        val service = driveService ?: return
+        val service = viewModel.driveService ?: return
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val timestamp = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.getDefault()).format(Date())
@@ -260,37 +239,44 @@ class FirstFragment : Fragment() {
             findNavController().navigate(R.id.action_FirstFragment_to_videoListFragment)
         }
 
+        binding.imageView2.setOnClickListener {
+            findNavController().navigate(R.id.action_FirstFragment_to_settingsFragment)
+        }
+
         binding.buttonFirst.setOnClickListener {
             if (!isAutoRecording) {
                 binding.buttonFirst.isEnabled = false
-                binding.buttonFirst.text = "Initializing..."
+                binding.buttonFirst.setText(R.string.initializing)
                 lifecycleScope.launch {
                     try {
-                        val service = driveService
+                        val service = viewModel.driveService
                         if (service != null) {
-                            specialFolderId = getOrCreateFolder(service, "LiveCam_Recordings")
+                            if (viewModel.rootFolderId == null) {
+                                viewModel.rootFolderId = getOrCreateFolder(service, "LiveCam_Recordings")
+                            }
+                            specialFolderId = viewModel.rootFolderId
                             val sessionName = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.getDefault()).format(Date())
                             currentSessionFolderId = getOrCreateFolder(service, sessionName, specialFolderId)
                             segmentCounter = 1
 
                             isAutoRecording = true
-                            binding.buttonFirst.text = "Stop"
+                            binding.buttonFirst.setText(R.string.stop)
                             captureVideo()
                         } else {
-                            Toast.makeText(requireContext(), "Drive service not initialized", Toast.LENGTH_SHORT).show()
-                            binding.buttonFirst.text = "Start"
+                            Toast.makeText(requireContext(), R.string.drive_service_not_initialized, Toast.LENGTH_SHORT).show()
+                            binding.buttonFirst.setText(R.string.start)
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Initialization failed", e)
-                        Toast.makeText(requireContext(), "Failed to initialize folders", Toast.LENGTH_SHORT).show()
-                        binding.buttonFirst.text = "Start"
+                        Toast.makeText(requireContext(), R.string.failed_to_initialize_folders, Toast.LENGTH_SHORT).show()
+                        binding.buttonFirst.setText(R.string.start)
                     } finally {
                         binding.buttonFirst.isEnabled = true
                     }
                 }
             } else {
                 isAutoRecording = false
-                binding.buttonFirst.text = "Start"
+                binding.buttonFirst.setText(R.string.start)
                 recording?.stop()
             }
         }
