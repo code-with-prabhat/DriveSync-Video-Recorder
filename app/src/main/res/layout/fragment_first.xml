@@ -40,30 +40,38 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="36dp"
             android:padding="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            tools:layout_editor_absoluteX="16dp">
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <ImageView
                 android:id="@+id/imageView2"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@drawable/baseline_settings_24"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:contentDescription="@string/settings"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:src="@drawable/settings"
+                app:layout_constraintEnd_toStartOf="@+id/linearLayout"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <LinearLayout
+                android:id="@+id/linearLayout"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 app:layout_constraintEnd_toStartOf="@+id/imageView"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/imageView2">
+
+            </LinearLayout>
 
             <ImageView
                 android:id="@+id/imageView"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/list"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
                 android:contentDescription="@string/videolist"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:src="@drawable/list"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/imageView2"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/linearLayout" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
