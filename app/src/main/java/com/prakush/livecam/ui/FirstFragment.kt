@@ -25,7 +25,6 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Scope
-import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.prakush.livecam.R
 import com.prakush.livecam.databinding.FragmentFirstBinding
@@ -166,60 +165,18 @@ class FirstFragment : Fragment() {
     }
 
     private fun uploadToDrive(uri: Uri, segmentNumber: Int, duration: String) {
-        val service = viewModel.driveService ?: return
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val timestamp = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.getDefault()).format(Date())
-                val fileMetadata = com.google.api.services.drive.model.File().apply {
-                    name = "${segmentNumber}_${duration}_$timestamp.mp4"
-                    currentSessionFolderId?.let {
-                        parents = listOf(it)
-                    }
-                }
-
-                // Convert Uri to File (This is a simplified version, ideally use contentResolver.openInputStream)
-                val inputStream = requireContext().contentResolver.openInputStream(uri)
-                val mediaContent = com.google.api.client.http.InputStreamContent("video/mp4", inputStream)
-
-                val file = service.files().create(fileMetadata, mediaContent)
-                    .setFields("id")
-                    .execute()
+                val fileName = "${segmentNumber}_${duration}_$timestamp.mp4"
+                
+                val fileId = viewModel.uploadVideo(uri, currentSessionFolderId, fileName, requireContext())
 
                 withContext(Dispatchers.Main) {
-                    Log.d(TAG, "Uploaded Segment $segmentNumber, ID: ${file.id}")
+                    Log.d(TAG, "Uploaded Segment $segmentNumber, ID: $fileId")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Upload failed", e)
-            }
-        }
-    }
-
-    private suspend fun getOrCreateFolder(service: Drive, folderName: String, parentId: String? = null): String {
-        return withContext(Dispatchers.IO) {
-            val query = "name = '$folderName' and mimeType = 'application/vnd.google-apps.folder' and trashed = false" +
-                    if (parentId != null) " and '$parentId' in parents" else ""
-
-            val result = service.files().list()
-                .setQ(query)
-                .setSpaces("drive")
-                .setFields("files(id, name)")
-                .execute()
-
-            val folder = result.files?.firstOrNull()
-            if (folder != null) {
-                folder.id
-            } else {
-                val fileMetadata = com.google.api.services.drive.model.File().apply {
-                    name = folderName
-                    mimeType = "application/vnd.google-apps.folder"
-                    if (parentId != null) {
-                        parents = listOf(parentId)
-                    }
-                }
-                val newFolder = service.files().create(fileMetadata)
-                    .setFields("id")
-                    .execute()
-                newFolder.id
             }
         }
     }
@@ -249,14 +206,13 @@ class FirstFragment : Fragment() {
                 binding.buttonFirst.setText(R.string.initializing)
                 lifecycleScope.launch {
                     try {
-                        val service = viewModel.driveService
-                        if (service != null) {
+                        if (viewModel.driveService != null) {
                             if (viewModel.rootFolderId == null) {
-                                viewModel.rootFolderId = getOrCreateFolder(service, "LiveCam_Recordings")
+                                viewModel.rootFolderId = viewModel.getOrCreateFolder("LiveCam_Recordings")
                             }
                             specialFolderId = viewModel.rootFolderId
                             val sessionName = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.getDefault()).format(Date())
-                            currentSessionFolderId = getOrCreateFolder(service, sessionName, specialFolderId)
+                            currentSessionFolderId = viewModel.getOrCreateFolder(sessionName, specialFolderId)
                             segmentCounter = 1
 
                             isAutoRecording = true

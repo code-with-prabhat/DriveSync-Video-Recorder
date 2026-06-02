@@ -11,7 +11,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.prakush.livecam.data.Video
 import com.prakush.livecam.databinding.FragmentVideoListBinding
 import com.prakush.livecam.viewmodel.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -97,30 +96,11 @@ class VideoListFragment : Fragment() {
     }
 
     private fun fetchSessions() {
-        val service = viewModel.driveService ?: return
-        viewModel.setLoading(true)
+        if (viewModel.driveService == null) return
         isViewingSessions = true
-
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             try {
-                if (viewModel.rootFolderId == null) {
-                    val folderQuery = "name = 'LiveCam_Recordings' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
-                    val folderResult = service.files().list()
-                        .setQ(folderQuery)
-                        .setSpaces("drive")
-                        .setFields("files(id)")
-                        .execute()
-                    viewModel.rootFolderId = folderResult.files?.firstOrNull()?.id
-                }
-
-                val currentRootId = viewModel.rootFolderId
-                if (currentRootId == null) {
-                    showError("No recordings found")
-                    return@launch
-                }
-
-                val sessionQuery = "'$currentRootId' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
-                fetchAndDisplayFiles(sessionQuery, "application/vnd.google-apps.folder", true, "Error fetching sessions")
+                viewModel.fetchSessions()
             } catch (e: Exception) {
                 showError("Error fetching sessions", e)
             }
@@ -128,39 +108,13 @@ class VideoListFragment : Fragment() {
     }
 
     private fun fetchVideosInFolder(folderId: String) {
-        viewModel.setLoading(true)
         isViewingSessions = false
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            val fileQuery = "'$folderId' in parents and mimeType = 'video/mp4' and trashed = false"
-            fetchAndDisplayFiles(fileQuery, "video/mp4", false, "Error fetching videos")
-        }
-    }
-
-    private suspend fun fetchAndDisplayFiles(query: String, defaultMimeType: String, isFolder: Boolean, errorMsg: String) {
-        val service = viewModel.driveService ?: return
-        try {
-            val result = service.files().list()
-                .setQ(query)
-                .setSpaces("drive")
-                .setFields("files(id, name, mimeType, createdTime)")
-                .execute()
-
-            val videos = result.files?.map { file ->
-                Video(
-                    id = file.id,
-                    name = file.name,
-                    mimeType = file.mimeType ?: defaultMimeType,
-                    createdTime = file.createdTime?.toString(),
-                    isFolder = isFolder
-                )
-            } ?: emptyList()
-
-            withContext(Dispatchers.Main) {
-                viewModel.setVideos(videos.sortedBy { it.createdTime })
+        lifecycleScope.launch {
+            try {
+                viewModel.fetchVideosInFolder(folderId)
+            } catch (e: Exception) {
+                showError("Error fetching videos", e)
             }
-        } catch (e: Exception) {
-            showError(errorMsg, e)
         }
     }
 
