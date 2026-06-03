@@ -1,11 +1,11 @@
 # 🎥 DriveSync Video Recorder
 
-DriveSync Video Recorder is a powerful Android application designed to capture high-quality video and seamlessly synchronize it with your Google Drive. Whether you're recording for security, documentation, or personal memories, DriveSync ensures your videos are safely backed up and organized.
+DriveSync Video Recorder is a powerful Android application designed to capture high-quality video and Secure it by uploading to google drive and  seamlessly synchronize it with your Google Drive. Whether you're recording for security, documentation, or personal memories, DriveSync ensures your videos are safely backed up and organized.
 
 ## ✨ Features
 
-- 📹 **Smart Video Capture**: High-quality recording using the latest CameraX API.
-- ☁️ **Google Drive Integration**: Automatic and manual syncing of recordings to your private Google Drive storage.
+- 📹 **Smart Video Capture**: High-quality recording and upload every 5 seconds to ensure no data loss
+- ☁️ **Google Drive Integration**: Automatic syncing of recordings to your private Google Drive storage.
 - 📁 **Session-Based Organization**: Recordings are neatly grouped into session folders for easy management.
 - 🗑️ **Management Tools**: Quickly delete videos or entire session folders to manage your storage.
 - 🔐 **Secure Access**: Built-in authentication system to protect your account.
@@ -21,10 +21,8 @@ DriveSync Video Recorder is a powerful Android application designed to capture h
 ## 🛠️ Technologies Used
 
 - **Language**: Kotlin
-- **UI Framework**: Android Jetpack (Compose/XML)
-- **Camera**: CameraX
+- **UI Framework**: Android XML
+- **Google SignIn**: Faster SignIn
+- **Camera**: CameraX class
 - **API**: Google Drive API v3
 - **Architecture**: MVVM (Model-View-ViewModel)
-- **Dependency Injection**: Manual / Hilt (if applicable)
-
----
