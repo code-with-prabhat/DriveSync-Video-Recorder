@@ -25,4 +25,4 @@ DriveSync Video Recorder is a powerful Android application designed to capture h
 - **Google SignIn**: Faster SignIn
 - **Camera**: CameraX class
 - **API**: Google Drive API v3
-- **Architecture**: MVVM (Model-View-ViewModel)
+- **Architecture**: MVVM (Model-View-ViewModel
