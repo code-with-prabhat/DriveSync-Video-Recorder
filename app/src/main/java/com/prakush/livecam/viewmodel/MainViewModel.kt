@@ -47,6 +47,13 @@ class MainViewModel : ViewModel() {
         return driveService
     }
 
+    fun clearDriveService() {
+        driveService = null
+        credential = null
+        rootFolderId = null
+        _videos.value = emptyList()
+    }
+
     fun setVideos(videoList: List<Video>) {
         _videos.value = videoList
         _isLoading.value = false
