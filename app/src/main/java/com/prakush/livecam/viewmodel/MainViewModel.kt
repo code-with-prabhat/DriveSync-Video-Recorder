@@ -92,4 +92,9 @@ class MainViewModel : ViewModel() {
         val service = driveService ?: return null
         return repository.uploadVideo(service, uri, folderId, fileName, context)
     }
+
+    suspend fun deleteFile(fileId: String) {
+        val service = driveService ?: return
+        repository.deleteFile(service, fileId)
+    }
 }

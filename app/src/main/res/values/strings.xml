@@ -41,4 +41,5 @@
     <string name="recording_started">Recording Started</string>
     <string name="drive_service_not_initialized">Drive service not initialized</string>
     <string name="failed_to_initialize_folders">Failed to initialize folders</string>
+    <string name="delete">Delete</string>
 </resources>

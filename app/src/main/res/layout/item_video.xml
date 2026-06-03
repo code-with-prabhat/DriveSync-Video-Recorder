@@ -11,12 +11,12 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp">
+        android:padding="4dp">
 
         <ImageView
             android:id="@+id/imageViewThumbnail"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_margin="8dp"
             android:contentDescription="@string/video_thumbnail"
             android:scaleType="centerCrop"
@@ -27,28 +27,45 @@
 
         <TextView
             android:id="@+id/textViewVideoName"
-            android:layout_width="305dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
+            android:layout_marginEnd="8dp"
             android:ellipsize="end"
             android:maxLines="2"
             android:textAppearance="?attr/textAppearanceSubtitle1"
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/textViewUploadDate"
+            app:layout_constraintEnd_toStartOf="@+id/buttonDelete"
             app:layout_constraintStart_toEndOf="@+id/imageViewThumbnail"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Video Name Example.mp4" />
 
         <TextView
             android:id="@+id/textViewUploadDate"
-            android:layout_width="305dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
+            android:layout_marginEnd="8dp"
             android:textAppearance="?attr/textAppearanceCaption"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/buttonDelete"
             app:layout_constraintStart_toEndOf="@+id/imageViewThumbnail"
             app:layout_constraintTop_toBottomOf="@+id/textViewVideoName"
             tools:text="Uploaded: 25-05-2024" />
+
+        <ImageButton
+            android:id="@+id/buttonDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/delete"
+            android:padding="8dp"
+            android:src="@android:drawable/ic_menu_delete"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@android:color/holo_red_dark" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

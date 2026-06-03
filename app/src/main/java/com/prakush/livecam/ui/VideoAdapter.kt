@@ -5,10 +5,14 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.prakush.livecam.R
 import com.prakush.livecam.data.Video
 import com.prakush.livecam.databinding.ItemVideoBinding
 
-class VideoAdapter(private val onVideoClick: (Video) -> Unit) :
+class VideoAdapter(
+    private val onVideoClick: (Video) -> Unit,
+    private val onDeleteClick: (Video) -> Unit
+) :
     ListAdapter<Video, VideoAdapter.VideoViewHolder>(VideoDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VideoViewHolder {
@@ -29,16 +33,20 @@ class VideoAdapter(private val onVideoClick: (Video) -> Unit) :
             binding.textViewUploadDate.text = video.createdTime ?: ""
 
             if (video.isFolder) {
-                binding.imageViewThumbnail.setImageResource(android.R.drawable.ic_menu_more)
+                binding.imageViewThumbnail.setImageResource(R.drawable.right_arrow)
                 binding.textViewUploadDate.visibility = android.view.View.GONE
             } else {
-                binding.imageViewThumbnail.setImageResource(android.R.drawable.presence_video_online)
+                binding.imageViewThumbnail.setImageResource(R.drawable.play_button)
                 binding.textViewUploadDate.visibility = android.view.View.VISIBLE
                 binding.textViewUploadDate.text = "Uploaded: ${video.createdTime ?: "Unknown"}"
             }
 
             binding.root.setOnClickListener {
                 onVideoClick(video)
+            }
+
+            binding.buttonDelete.setOnClickListener {
+                onDeleteClick(video)
             }
         }
     }

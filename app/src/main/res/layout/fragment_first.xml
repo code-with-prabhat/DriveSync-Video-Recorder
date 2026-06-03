@@ -22,17 +22,25 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_first"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
             android:text="@string/next"
-            app:cornerRadius="50dp"
             android:insetTop="0dp"
             android:insetBottom="0dp"
             android:padding="0dp"
+            android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/viewFinder" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#FFFFFF"
+            app:layout_constraintBottom_toTopOf="@id/constraintLayout">
+
+        </LinearLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout"
@@ -43,11 +51,11 @@
             app:layout_constraintBottom_toBottomOf="parent">
 
             <ImageView
-                android:id="@+id/imageView2"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:contentDescription="@string/settings"
-                android:src="@drawable/settings"
+                android:id="@+id/imageView"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:contentDescription="@string/videolist"
+                android:src="@drawable/list"
                 app:layout_constraintEnd_toStartOf="@+id/linearLayout"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -59,20 +67,29 @@
                 app:layout_constraintEnd_toStartOf="@+id/imageView"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toEndOf="@+id/imageView2">
-
             </LinearLayout>
 
             <ImageView
-                android:id="@+id/imageView"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:contentDescription="@string/videolist"
-                android:src="@drawable/list"
+                android:id="@+id/imageView2"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:contentDescription="@string/settings"
+                android:src="@drawable/settings"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toEndOf="@+id/linearLayout" />
+                app:layout_constraintStart_toEndOf="@+id/linearLayout"/>
+
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#FFFFFF"
+            app:layout_constraintTop_toBottomOf="@id/constraintLayout">
+
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

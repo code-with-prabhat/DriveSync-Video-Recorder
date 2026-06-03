@@ -2,6 +2,8 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.LiveCam" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">#317AFF</item>
+        <item name="android:fontFamily">@font/globle_font</item>
+        <item name="fontFamily">@font/globle_font</item>
     </style>
 
     <style name="Theme.LiveCam" parent="Base.Theme.LiveCam" />

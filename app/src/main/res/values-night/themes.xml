@@ -4,5 +4,7 @@
             <item name="colorPrimary">#FCE4EC</item>
             <item name="colorSecondary">#B5C4FF</item>
             <item name="colorTertiary">#E0E0FF</item>
+            <item name="android:fontFamily">@font/globle_font</item>
+            <item name="fontFamily">@font/globle_font</item>
     </style>
 </resources>
