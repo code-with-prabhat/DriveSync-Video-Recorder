@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.prakush.livecam"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.prakush.livecam"
         minSdk = 24
-        targetSdk = 37
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -71,6 +71,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.session)
     implementation(libs.firebase.database)
     implementation(libs.firebase.auth)
     implementation(libs.material)

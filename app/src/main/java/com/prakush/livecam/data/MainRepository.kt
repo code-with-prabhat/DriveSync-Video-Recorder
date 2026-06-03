@@ -110,4 +110,8 @@ class MainRepository {
             .execute()
         file.id
     }
+
+    suspend fun deleteFile(service: Drive, fileId: String) = withContext(Dispatchers.IO) {
+        service.files().delete(fileId).execute()
+    }
 }

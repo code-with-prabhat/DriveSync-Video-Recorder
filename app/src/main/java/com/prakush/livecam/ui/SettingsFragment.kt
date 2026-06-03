@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -14,11 +15,14 @@ import com.google.android.gms.common.api.Scope
 import com.google.api.services.drive.DriveScopes
 import com.prakush.livecam.R
 import com.prakush.livecam.databinding.FragmentSettingsBinding
+import com.prakush.livecam.viewmodel.MainViewModel
 
 class SettingsFragment : Fragment() {
 
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
+
+    private val viewModel: MainViewModel by activityViewModels()
 
     private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         @Suppress("DEPRECATION")
@@ -49,6 +53,10 @@ class SettingsFragment : Fragment() {
             requestSignIn()
         }
 
+        binding.buttonDisconnectDrive.setOnClickListener {
+            requestSignOut()
+        }
+
         binding.textViewAbout.setOnClickListener {
             Toast.makeText(requireContext(), "About clicked", Toast.LENGTH_SHORT).show()
         }
@@ -67,10 +75,12 @@ class SettingsFragment : Fragment() {
     private fun updateDriveStatus(account: GoogleSignInAccount?) {
         if (account != null && account.grantedScopes.contains(Scope(DriveScopes.DRIVE_FILE))) {
             binding.textViewDriveStatus.setText(R.string.drive_status_connected)
-            binding.buttonConnectDrive.isEnabled = false
+            binding.buttonConnectDrive.visibility = View.GONE
+            binding.buttonDisconnectDrive.visibility = View.VISIBLE
         } else {
             binding.textViewDriveStatus.setText(R.string.drive_status_not_connected)
-            binding.buttonConnectDrive.isEnabled = true
+            binding.buttonConnectDrive.visibility = View.VISIBLE
+            binding.buttonDisconnectDrive.visibility = View.GONE
         }
     }
 
@@ -82,6 +92,18 @@ class SettingsFragment : Fragment() {
         @Suppress("DEPRECATION")
         val client = GoogleSignIn.getClient(requireActivity(), gso)
         signInLauncher.launch(client.signInIntent)
+    }
+
+    private fun requestSignOut() {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .build()
+        @Suppress("DEPRECATION")
+        val client = GoogleSignIn.getClient(requireActivity(), gso)
+        client.signOut().addOnCompleteListener {
+            viewModel.clearDriveService()
+            updateDriveStatus(null)
+            Toast.makeText(requireContext(), "Google Drive disconnected", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onDestroyView() {

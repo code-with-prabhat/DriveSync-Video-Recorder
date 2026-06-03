@@ -24,6 +24,7 @@ class MainViewModel : ViewModel() {
     val isLoading: LiveData<Boolean> = _isLoading
 
     var driveService: Drive? = null
+    var credential: GoogleAccountCredential? = null
     var rootFolderId: String? = null
 
     fun initializeDriveService(context: Context): Drive? {
@@ -31,7 +32,7 @@ class MainViewModel : ViewModel() {
 
         val account = GoogleSignIn.getLastSignedInAccount(context)
         if (account != null) {
-            val credential = GoogleAccountCredential.usingOAuth2(
+            credential = GoogleAccountCredential.usingOAuth2(
                 context, listOf(DriveScopes.DRIVE_FILE)
             ).apply {
                 selectedAccount = account.account
@@ -44,6 +45,13 @@ class MainViewModel : ViewModel() {
             ).setApplicationName("DriveSync Video Recorder").build()
         }
         return driveService
+    }
+
+    fun clearDriveService() {
+        driveService = null
+        credential = null
+        rootFolderId = null
+        _videos.value = emptyList()
     }
 
     fun setVideos(videoList: List<Video>) {
@@ -90,5 +98,10 @@ class MainViewModel : ViewModel() {
     suspend fun uploadVideo(uri: Uri, folderId: String?, fileName: String, context: Context): String? {
         val service = driveService ?: return null
         return repository.uploadVideo(service, uri, folderId, fileName, context)
+    }
+
+    suspend fun deleteFile(fileId: String) {
+        val service = driveService ?: return
+        repository.deleteFile(service, fileId)
     }
 }

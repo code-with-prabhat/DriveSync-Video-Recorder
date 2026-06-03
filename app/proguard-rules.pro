@@ -29,3 +29,11 @@
 -dontwarn com.google.api.client.googleapis.extensions.android.**
 -dontwarn com.google.api.client.googleapis.javanet.**
 -dontwarn com.google.api.client.http.javanet.**
+
+# Keep Video class for Navigation
+-keep class com.prakush.livecam.data.Video { *; }
+
+# Keep all Parcelables
+-keep class * implements android.os.Parcelable {
+    public static final android.os.Parcelable$Creator *;
+}
